@@ -21,6 +21,16 @@ SUPPORTED_EXTS = {".png", ".jpg", ".jpeg"}
 def validate_image_path(path_str: str) -> Path:
     """
     Validates file existence, extension, and non-zero size.
+    
+    Args:
+        path_str: File path as string.
+    
+    Returns:
+        Path: Validated Path object.
+    
+    Raises:
+        FileNotFoundError: If file does not exist.
+        ValueError: If format unsupported or file is empty.
     """
     p = Path(path_str)
     if not p.exists():
@@ -34,7 +44,13 @@ def validate_image_path(path_str: str) -> Path:
 
 def encode_image_to_base64(path: Path) -> str:
     """
-    Returns base64-encoded image string suitable for OpenAI vision calls. [web:18]
+    Returns base64-encoded image string suitable for OpenAI vision calls.
+    
+    Args:
+        path: Validated Path object to image file.
+    
+    Returns:
+        str: Base64-encoded image string.
     """
     with path.open("rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
@@ -57,6 +73,12 @@ def parse_contract_images_with_vision(image_paths: List[str]) -> List[Dict[str, 
     """
     Calls GPT-4o in multimodal mode to parse each contract image into a structured JSON.
     Uses base64-encoded images for local files.
+    
+    Args:
+        image_paths: List of file paths to contract images.
+    
+    Returns:
+        List[Dict[str, Any]]: List of parsed documents, each containing raw extracted text.
     """
     prompt = build_contract_vision_prompt()
     parsed_docs: List[Dict[str, Any]] = []

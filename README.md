@@ -1,15 +1,17 @@
 # contract-delta
 Autonomous Contract Comparison and Change Extraction Agent that can receive two scanned contract images (original and amendment), automatically parse them using vision-capable LLMs, intelligently extract changes through collaborative agents, and return structured, validated outputs that downstream systems can consume.
 
-(1) Project description (100+ words), (2) Architecture diagram OR 150+ word explanation of agent workflow and collaboration pattern, (3) Setup instructions (install, API keys for OpenAI + Langfuse, test images), (4) Usage with example command, (5) Expected output format with sample, (6) Technical decisions (why two agents? why this model? 100+ words), (7) Langfuse tracing guide (how to view dashboard, 50+ words).
 
-# Multimodal Contract Change Extractor
+# Detailed description
 
 This project compares an original contract and its amendment using GPT-4o vision and a two-agent architecture. It parses scanned contract images directly, aligns sections between versions, and outputs a Pydantic-validated JSON payload capturing which sections changed, which business topics are affected, and a detailed summary of the change. The system is designed for integration into legal review queues, compliance workflows, and contract databases, where stable schemas and traceability are critical. GPT-4o handles real-world scan quality issues such as skew, stamps, and low contrast, reducing the need for brittle OCR pre-processing. Langfuse tracing provides deep observability into every step, including model calls, agent reasoning, and validation, making the solution production-ready.
 
 ## Architecture and Agent Workflow
 
 The workflow consists of four main stages. First, GPT-4o vision parses each contract image and returns a structured representation of the document hierarchy (title, sections, subsections, and text). Second, Agent 1 (the contextualization agent) consumes both structured representations and normalizes section identifiers while aligning corresponding sections into a common list. Each aligned item contains original and amendment text along with a shared heading. Third, Agent 2 (the extraction agent) focuses only on this aligned structure and identifies which sections changed, which topics those changes impact, and describes the overall effect in a single summary string. Finally, a Pydantic model validates the output and enforces the exact schema expected by downstream systems. Langfuse wraps OpenAI calls and custom spans so that each stage (image parsing, agents, validation) appears as a separate span nested under a single trace.
+
+![Contract Delta workflow](images/contract-delta-workflow.jpg)
+
 
 ## Setup
 
@@ -23,7 +25,7 @@ pip install -r requirements.txt
 4. ## Usage
 Place test images under `data/test_contracts/` as described below.
 ```powershell
-python -m src.main data/test_contracts/pair1_original_page1.png data/test_contracts/pair1_amendment_page1.png
+python -m src.main -o data/test_contracts/pair1_contract1.png -a data/test_contracts/pair1_amendment2.png
 ```
 5. 
 
@@ -53,8 +55,7 @@ A single prompt that both aligns sections and reasons about changes tends to bec
 
 After setting LANGFUSE environment variables and running the CLI command, navigate to your Langfuse dashboard. Under Traces, you will see entries named `contract_change_workflow`, each representing a full run comparing two contracts. Expanding a trace shows child spans such as `image_parsing`, `contextualization`, `extraction`, and `pydantic_validation`, and each OpenAI call is automatically nested inside the appropriate span. This view lets you inspect prompts, model responses, token usage, and latencies, which is essential for optimizing cost and debugging misclassifications in production.
 
-langfuse example run screenshot: contract-delta/example-run-langfuse.png
-
+![langfuse example run screenshot](images/example-run-langfuse.png)
 
 -------------------------------------------------------------------------------------------------------------------
 | Aspect             | Choice                        | Rationale                                                   |
