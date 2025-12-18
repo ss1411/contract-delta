@@ -6,6 +6,12 @@ Autonomous Contract Comparison and Change Extraction Agent that can receive two 
 
 This project compares an original contract and its amendment using GPT-4o vision and a two-agent architecture. It parses scanned contract images directly, aligns sections between versions, and outputs a Pydantic-validated JSON payload capturing which sections changed, which business topics are affected, and a detailed summary of the change. The system is designed for integration into legal review queues, compliance workflows, and contract databases, where stable schemas and traceability are critical. GPT-4o handles real-world scan quality issues such as skew, stamps, and low contrast, reducing the need for brittle OCR pre-processing. Langfuse tracing provides deep observability into every step, including model calls, agent reasoning, and validation, making the solution production-ready.
 
+
+## Demo video:
+
+<iframe src="https://drive.google.com/file/d/1g5MwEY64IfCVYIedzu72ddZbVPfcphXH/preview" width="640" height="480" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe> 
+
+
 ## Architecture and Agent Workflow
 
 The workflow consists of four main stages. First, GPT-4o vision parses each contract image and returns a structured representation of the document hierarchy (title, sections, subsections, and text). Second, Agent 1 (the contextualization agent) consumes both structured representations and normalizes section identifiers while aligning corresponding sections into a common list. Each aligned item contains original and amendment text along with a shared heading. Third, Agent 2 (the extraction agent) focuses only on this aligned structure and identifies which sections changed, which topics those changes impact, and describes the overall effect in a single summary string. Finally, a Pydantic model validates the output and enforces the exact schema expected by downstream systems. Langfuse wraps OpenAI calls and custom spans so that each stage (image parsing, agents, validation) appears as a separate span nested under a single trace.
